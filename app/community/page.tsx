@@ -22,7 +22,8 @@ import { TopBar } from "@/components/top-bar"
 import { ChatbotButton } from "@/components/chatbot-button"
 import { IssueReportForm } from "@/components/issue-report-form"
 import { IssueCard } from "@/components/issue-card"
-import { useAuth } from "@/lib/auth-context" // fixed import path from @/context/auth-context to @/lib/auth-context
+import { ApplicationForm, type ApplicationData } from "@/components/application-form"
+import { useAuth } from "@/lib/auth-context"
 
 type Posting = {
   id: string
@@ -80,9 +81,11 @@ export default function CommunityPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [filterType, setFilterType] = useState<"all" | "job" | "grant" | "announcement">("all")
   const [showIssueForm, setShowIssueForm] = useState(false)
+  const [showApplicationForm, setShowApplicationForm] = useState(false)
+  const [selectedPosting, setSelectedPosting] = useState<Posting | null>(null)
   const [issues, setIssues] = useState<any[]>([])
-  const { user } = useAuth() // Use useAuth hook to get user role
-  const userRole = user?.role || "citizen" // Set userRole based on auth context
+  const { user } = useAuth()
+  const userRole = user?.role || "citizen"
 
   useEffect(() => {
     const loadIssues = async () => {
@@ -184,6 +187,54 @@ export default function CommunityPage() {
     }
   }
 
+  const handleMarkIssueDone = async (issueId: string) => {
+    try {
+      await fetch(`/api/issues/${issueId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "resolved" }),
+      })
+      const response = await fetch("/api/issues")
+      if (response.ok) {
+        setIssues(await response.json())
+      }
+    } catch (error) {
+      console.error("Error marking issue as done:", error)
+    }
+  }
+
+  const handleDeleteIssue = async (issueId: string) => {
+    try {
+      await fetch(`/api/issues/${issueId}`, {
+        method: "DELETE",
+      })
+      setIssues(issues.filter((issue) => issue.id !== issueId))
+    } catch (error) {
+      console.error("Error deleting issue:", error)
+    }
+  }
+
+  const handleApplyClick = (posting: Posting) => {
+    setSelectedPosting(posting)
+    setShowApplicationForm(true)
+  }
+
+  const handleApplicationSubmit = async (data: ApplicationData) => {
+    try {
+      const response = await fetch("/api/applications", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      })
+      if (response.ok) {
+        alert("Application submitted successfully!")
+      }
+    } catch (error) {
+      console.error("Error submitting application:", error)
+      alert("Failed to submit application. Please try again.")
+    }
+  }
+
   return (
     <div className="flex h-screen bg-background">
       <Sidebar />
@@ -198,6 +249,21 @@ export default function CommunityPage() {
                 Browse jobs, grants, announcements, and report community issues
               </p>
             </div>
+
+            {showApplicationForm && selectedPosting && (
+              <div className="mb-6">
+                <ApplicationForm
+                  postingId={selectedPosting.id}
+                  postingTitle={selectedPosting.title}
+                  postingType={selectedPosting.type}
+                  onClose={() => {
+                    setShowApplicationForm(false)
+                    setSelectedPosting(null)
+                  }}
+                  onSubmit={handleApplicationSubmit}
+                />
+              </div>
+            )}
 
             {/* Issue Reporting Section */}
             <div className="space-y-4">
@@ -224,6 +290,8 @@ export default function CommunityPage() {
                       {...issue}
                       onUpvote={handleUpvoteIssue}
                       onStatusChange={handleIssueStatusChange}
+                      onMarkDone={handleMarkIssueDone}
+                      onDelete={handleDeleteIssue}
                       isAdmin={userRole === "admin"}
                     />
                   ))}
@@ -369,7 +437,7 @@ export default function CommunityPage() {
                         </div>
                       </div>
                       <div className="flex flex-col gap-2">
-                        <Button size="lg" className="gap-2">
+                        <Button size="lg" className="gap-2" onClick={() => handleApplyClick(posting)}>
                           Apply Now
                           <ArrowRight className="h-5 w-5" />
                         </Button>

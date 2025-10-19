@@ -13,10 +13,10 @@ const metrics = [
 ]
 
 const quickActions = [
-  { title: "Apply for Job", description: "Browse and apply for government positions", href: "/jobs" },
-  { title: "Request Grant", description: "Submit a grant application", href: "/grants" },
-  { title: "Get Support", description: "Contact citizen support services", href: "/support" },
-  { title: "Update Profile", description: "Manage your account information", href: "/profile" },
+  { title: "Apply for Job", description: "Browse and apply for government positions", href: "#jobs" },
+  { title: "Request Grant", description: "Submit a grant application", href: "#grants" },
+  { title: "Get Support", description: "Contact citizen support services", href: "#support" },
+  { title: "Update Profile", description: "Manage your account information", href: "#profile" },
 ]
 
 const applications = [

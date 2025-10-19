@@ -1,4 +1,4 @@
-import { db } from "./firebase"
+import { db, hasRequiredEnvVars } from "./firebase"
 import {
   collection,
   doc,
@@ -14,10 +14,17 @@ import {
   Timestamp,
 } from "firebase/firestore"
 import type { User, Job, MicroGig, JobApplication, AnalyticsData, Issue } from "./types"
+import { demoDataService } from "./demo-data"
+
+const useFirebase = hasRequiredEnvVars && db !== null
 
 // User Services
 export const userService = {
   async createUser(userId: string, userData: Partial<User>) {
+    if (!useFirebase) {
+      console.log("[v0] Demo mode: User creation simulated")
+      return
+    }
     const userRef = doc(db, "users", userId)
     await setDoc(userRef, {
       ...userData,
@@ -27,12 +34,20 @@ export const userService = {
   },
 
   async getUser(userId: string) {
+    if (!useFirebase) {
+      console.log("[v0] Demo mode: User fetch simulated")
+      return null
+    }
     const userRef = doc(db, "users", userId)
     const userSnap = await getDoc(userRef)
     return userSnap.exists() ? userSnap.data() : null
   },
 
   async updateUser(userId: string, updates: Partial<User>) {
+    if (!useFirebase) {
+      console.log("[v0] Demo mode: User update simulated")
+      return
+    }
     const userRef = doc(db, "users", userId)
     await updateDoc(userRef, {
       ...updates,
@@ -41,6 +56,10 @@ export const userService = {
   },
 
   async getUsersByParish(parish: string) {
+    if (!useFirebase) {
+      console.log("[v0] Demo mode: Users by parish simulated")
+      return []
+    }
     const q = query(collection(db, "users"), where("parish", "==", parish))
     const querySnapshot = await getDocs(q)
     return querySnapshot.docs.map((doc) => doc.data())
@@ -50,6 +69,9 @@ export const userService = {
 // Job Services
 export const jobService = {
   async createJob(jobData: Partial<Job>) {
+    if (!useFirebase) {
+      return await demoDataService.createJob(jobData)
+    }
     const jobsRef = collection(db, "jobs")
     const docRef = await addDoc(jobsRef, {
       ...jobData,
@@ -61,12 +83,18 @@ export const jobService = {
   },
 
   async getJob(jobId: string) {
+    if (!useFirebase) {
+      return await demoDataService.getJob(jobId)
+    }
     const jobRef = doc(db, "jobs", jobId)
     const jobSnap = await getDoc(jobRef)
     return jobSnap.exists() ? jobSnap.data() : null
   },
 
   async getActiveJobs(parish?: string) {
+    if (!useFirebase) {
+      return await demoDataService.getJobs(parish)
+    }
     let q
     if (parish) {
       q = query(
@@ -83,6 +111,9 @@ export const jobService = {
   },
 
   async updateJob(jobId: string, updates: Partial<Job>) {
+    if (!useFirebase) {
+      return await demoDataService.updateJob(jobId, updates)
+    }
     const jobRef = doc(db, "jobs", jobId)
     await updateDoc(jobRef, {
       ...updates,
@@ -91,11 +122,17 @@ export const jobService = {
   },
 
   async deleteJob(jobId: string) {
+    if (!useFirebase) {
+      return await demoDataService.deleteJob(jobId)
+    }
     const jobRef = doc(db, "jobs", jobId)
     await deleteDoc(jobRef)
   },
 
   markJobCompleted: async (jobId: string) => {
+    if (!useFirebase) {
+      return await demoDataService.updateJob(jobId, { status: "filled" })
+    }
     const jobRef = doc(db, "jobs", jobId)
     await updateDoc(jobRef, {
       status: "filled",
@@ -104,6 +141,9 @@ export const jobService = {
   },
 
   removeInactiveJob: async (jobId: string) => {
+    if (!useFirebase) {
+      return await demoDataService.deleteJob(jobId)
+    }
     const jobRef = doc(db, "jobs", jobId)
     await deleteDoc(jobRef)
   },
@@ -112,6 +152,9 @@ export const jobService = {
 // Micro-Gig Services
 export const gigService = {
   async createGig(gigData: Partial<MicroGig>) {
+    if (!useFirebase) {
+      return await demoDataService.createGig(gigData)
+    }
     const gigsRef = collection(db, "microGigs")
     const docRef = await addDoc(gigsRef, {
       ...gigData,
@@ -123,12 +166,18 @@ export const gigService = {
   },
 
   async getGig(gigId: string) {
+    if (!useFirebase) {
+      return await demoDataService.getGig(gigId)
+    }
     const gigRef = doc(db, "microGigs", gigId)
     const gigSnap = await getDoc(gigRef)
     return gigSnap.exists() ? gigSnap.data() : null
   },
 
   async getAvailableGigs(parish?: string) {
+    if (!useFirebase) {
+      return await demoDataService.getGigs(parish)
+    }
     let q
     if (parish) {
       q = query(
@@ -145,6 +194,9 @@ export const gigService = {
   },
 
   async acceptGig(gigId: string, userId: string) {
+    if (!useFirebase) {
+      return await demoDataService.acceptGig(gigId, userId)
+    }
     const acceptanceRef = collection(db, "gigAcceptances")
     const docRef = await addDoc(acceptanceRef, {
       gigId,
@@ -168,6 +220,10 @@ export const gigService = {
   },
 
   async completeGig(acceptanceId: string) {
+    if (!useFirebase) {
+      console.log("[v0] Demo mode: Gig completion simulated")
+      return
+    }
     const acceptanceRef = doc(db, "gigAcceptances", acceptanceId)
     await updateDoc(acceptanceRef, {
       status: "completed",
@@ -180,6 +236,9 @@ export const gigService = {
 // Job Application Services
 export const applicationService = {
   async createApplication(appData: Partial<JobApplication>) {
+    if (!useFirebase) {
+      return await demoDataService.createApplication(appData)
+    }
     const appsRef = collection(db, "jobApplications")
     const docRef = await addDoc(appsRef, {
       ...appData,
@@ -203,12 +262,19 @@ export const applicationService = {
   },
 
   async getUserApplications(userId: string) {
+    if (!useFirebase) {
+      return await demoDataService.getUserApplications(userId)
+    }
     const q = query(collection(db, "jobApplications"), where("userId", "==", userId), orderBy("appliedAt", "desc"))
     const querySnapshot = await getDocs(q)
     return querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
   },
 
   async updateApplicationStatus(appId: string, status: string) {
+    if (!useFirebase) {
+      console.log("[v0] Demo mode: Application status update simulated")
+      return
+    }
     const appRef = doc(db, "jobApplications", appId)
     await updateDoc(appRef, {
       status,
@@ -220,6 +286,10 @@ export const applicationService = {
 // Analytics Services
 export const analyticsService = {
   async recordAnalytics(data: Partial<AnalyticsData>) {
+    if (!useFirebase) {
+      console.log("[v0] Demo mode: Analytics recording simulated")
+      return
+    }
     const analyticsRef = collection(db, "analytics")
     await addDoc(analyticsRef, {
       ...data,
@@ -228,6 +298,10 @@ export const analyticsService = {
   },
 
   async getAnalytics(days = 30) {
+    if (!useFirebase) {
+      console.log("[v0] Demo mode: Analytics fetch simulated")
+      return []
+    }
     const startDate = new Date()
     startDate.setDate(startDate.getDate() - days)
 
@@ -244,6 +318,9 @@ export const analyticsService = {
 // Issue Services
 export const issueService = {
   async createIssue(issueData: Partial<Issue>) {
+    if (!useFirebase) {
+      return await demoDataService.createIssue(issueData)
+    }
     const issuesRef = collection(db, "issues")
     const docRef = await addDoc(issuesRef, {
       ...issueData,
@@ -256,6 +333,9 @@ export const issueService = {
   },
 
   async getIssues(parish?: string) {
+    if (!useFirebase) {
+      return await demoDataService.getIssues(parish)
+    }
     let q
     if (parish) {
       q = query(
@@ -272,6 +352,9 @@ export const issueService = {
   },
 
   async updateIssueStatus(issueId: string, status: string) {
+    if (!useFirebase) {
+      return await demoDataService.updateIssue(issueId, { status })
+    }
     const issueRef = doc(db, "issues", issueId)
     await updateDoc(issueRef, {
       status,
@@ -280,6 +363,9 @@ export const issueService = {
   },
 
   async upvoteIssue(issueId: string) {
+    if (!useFirebase) {
+      return await demoDataService.upvoteIssue(issueId)
+    }
     const issueRef = doc(db, "issues", issueId)
     const issueSnap = await getDoc(issueRef)
     if (issueSnap.exists()) {
@@ -291,6 +377,9 @@ export const issueService = {
   },
 
   async deleteIssue(issueId: string) {
+    if (!useFirebase) {
+      return await demoDataService.deleteIssue(issueId)
+    }
     const issueRef = doc(db, "issues", issueId)
     await deleteDoc(issueRef)
   },

@@ -35,7 +35,7 @@ const PARISHES = [
 
 export default function SignUpPage() {
   const router = useRouter()
-  const { isDemoMode, setUser } = useAuth()
+  const { isDemoMode } = useAuth()
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
@@ -94,7 +94,7 @@ export default function SignUpPage() {
     try {
       // Use demo auth if Firebase is not configured
       if (isDemoMode) {
-        const user = await demoAuth.signup(formData.email, formData.password, {
+        await demoAuth.signup(formData.email, formData.password, {
           email: formData.email,
           name: formData.fullName,
           phone: formData.phone,
@@ -103,15 +103,6 @@ export default function SignUpPage() {
           skills: [],
         })
         console.log("[v0] Demo user created:", formData.email)
-        setUser({
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          role: user.role,
-          parish: user.parish,
-          skills: user.skills,
-          createdAt: new Date(user.createdAt),
-        })
         router.push("/")
         return
       }
@@ -177,8 +168,8 @@ export default function SignUpPage() {
         {/* Logo */}
         <div className="flex justify-center mb-8">
           <Image
-            src="/images/jobync-logo.png"
-            alt="Jobsync"
+            src="/images/joust-logo.png"
+            alt="Joust Inc"
             width={200}
             height={80}
             className="invert brightness-110 contrast-125"

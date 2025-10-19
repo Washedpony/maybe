@@ -10,7 +10,6 @@ interface AuthContextType {
   firebaseUser: { uid: string } | null
   loading: boolean
   isDemoMode: boolean
-  setUser: (user: User | null) => void
   logout: () => Promise<void>
 }
 
@@ -50,28 +49,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     initAuth()
-
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === "joust_demo_current_user") {
-        if (e.newValue) {
-          const currentUser = JSON.parse(e.newValue)
-          setUser({
-            id: currentUser.id,
-            email: currentUser.email,
-            name: currentUser.name,
-            role: currentUser.role,
-            parish: currentUser.parish,
-            skills: currentUser.skills,
-            createdAt: new Date(currentUser.createdAt),
-          })
-        } else {
-          setUser(null)
-        }
-      }
-    }
-
-    window.addEventListener("storage", handleStorageChange)
-    return () => window.removeEventListener("storage", handleStorageChange)
   }, [])
 
   const logout = async () => {
@@ -86,7 +63,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         firebaseUser: user ? { uid: user.id } : null,
         loading,
         isDemoMode,
-        setUser,
         logout,
       }}
     >

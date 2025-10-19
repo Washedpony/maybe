@@ -1,19 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import {
-  Briefcase,
-  FileText,
-  HeadphonesIcon,
-  User,
-  Menu,
-  X,
-  LayoutDashboard,
-  Newspaper,
-  ClipboardCheck,
-  Building2,
-  Zap,
-} from "lucide-react"
+import { HeadphonesIcon, User, Menu, X, LayoutDashboard, Newspaper, ClipboardCheck, Building2, Zap } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Image from "next/image"
 
@@ -21,11 +9,9 @@ const navItems = [
   { icon: LayoutDashboard, label: "Dashboard", href: "/" },
   { icon: Newspaper, label: "Community", href: "/community" },
   { icon: Zap, label: "Micro-Gigs", href: "/micro-gigs" },
-  { icon: Briefcase, label: "Jobs", href: "/jobs" },
-  { icon: FileText, label: "Grants", href: "/grants" },
   { icon: HeadphonesIcon, label: "Support", href: "/support" },
   { icon: Building2, label: "Company", href: "/company" },
-  { icon: User, label: "Profile", href: "/profile" },
+  { icon: User, label: "Profile", href: "#profile" },
 ]
 
 const adminNavItems = [
@@ -33,11 +19,9 @@ const adminNavItems = [
   { icon: ClipboardCheck, label: "Review Submissions", href: "/admin/reviews" },
   { icon: Newspaper, label: "Community", href: "/community" },
   { icon: Zap, label: "Micro-Gigs", href: "/micro-gigs" },
-  { icon: Briefcase, label: "Jobs", href: "/jobs" },
-  { icon: FileText, label: "Grants", href: "/grants" },
   { icon: HeadphonesIcon, label: "Support", href: "/support" },
   { icon: Building2, label: "Company", href: "/company" },
-  { icon: User, label: "Profile", href: "/profile" },
+  { icon: User, label: "Profile", href: "#profile" },
 ]
 
 export function Sidebar({ isAdmin = false }: { isAdmin?: boolean }) {
@@ -65,10 +49,19 @@ export function Sidebar({ isAdmin = false }: { isAdmin?: boolean }) {
         <div className="flex flex-col h-full">
           {/* Logo */}
           <div className="p-6 border-b border-sidebar-border flex flex-col items-center">
-            <div className="relative w-40 h-24 flex items-center justify-center mb-2">
-              <Image src="/images/jobync-logo.png" alt="Jobsync Logo" fill className="object-contain" priority />
+            <div className="relative w-full max-w-[200px] aspect-[4/3] flex items-center justify-center">
+              <Image
+                src="/images/joust-logo.png"
+                alt="Joust Inc Logo"
+                fill
+                className="object-contain invert brightness-110"
+                priority
+              />
             </div>
-            <p className="text-sm text-muted-foreground">{isAdmin ? "Admin Panel" : "Citizen Services"}</p>
+            <div className="relative w-32 h-16 mt-4 mb-2">
+              <Image src="/images/jibjab-logo.png" alt="JibJab Logo" fill className="object-contain" />
+            </div>
+            <p className="text-sm text-muted-foreground mt-1">{isAdmin ? "Admin Panel" : "Citizen Services"}</p>
           </div>
 
           {/* Navigation */}

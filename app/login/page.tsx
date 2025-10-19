@@ -18,7 +18,7 @@ import { useAuth } from "@/lib/auth-context"
 
 export default function LoginPage() {
   const router = useRouter()
-  const { isDemoMode, setUser } = useAuth()
+  const { isDemoMode } = useAuth()
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
@@ -41,16 +41,7 @@ export default function LoginPage() {
 
       // Use demo auth if Firebase is not configured
       if (isDemoMode) {
-        const user = await demoAuth.signin(formData.email, formData.password)
-        setUser({
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          role: user.role,
-          parish: user.parish,
-          skills: user.skills,
-          createdAt: new Date(user.createdAt),
-        })
+        await demoAuth.signin(formData.email, formData.password)
         router.push("/")
         return
       }
@@ -94,8 +85,8 @@ export default function LoginPage() {
         {/* Logo */}
         <div className="flex justify-center mb-8">
           <Image
-            src="/images/jobync-logo.png"
-            alt="Jobsync"
+            src="/images/joust-logo.png"
+            alt="Joust Inc"
             width={200}
             height={80}
             className="invert brightness-110 contrast-125"

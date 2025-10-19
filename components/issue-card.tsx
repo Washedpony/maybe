@@ -3,7 +3,7 @@
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardHeader, CardTitle } from "@/components/ui/card"
-import { AlertCircle, MapPin, ThumbsUp, CheckCircle, Clock } from "lucide-react"
+import { AlertCircle, MapPin, ThumbsUp, CheckCircle, Clock, Trash2 } from "lucide-react"
 
 interface IssueCardProps {
   id: string
@@ -15,6 +15,8 @@ interface IssueCardProps {
   upvotes: number
   onUpvote?: (id: string) => void
   onStatusChange?: (id: string, status: string) => void
+  onDelete?: (id: string) => void
+  onMarkDone?: (id: string) => void
   isAdmin?: boolean
 }
 
@@ -28,6 +30,8 @@ export function IssueCard({
   upvotes,
   onUpvote,
   onStatusChange,
+  onDelete,
+  onMarkDone,
   isAdmin,
 }: IssueCardProps) {
   const getStatusColor = (status: string) => {
@@ -86,16 +90,18 @@ export function IssueCard({
               {upvotes}
             </Button>
             {isAdmin && (
-              <select
-                value={status}
-                onChange={(e) => onStatusChange?.(id, e.target.value)}
-                className="text-xs px-2 py-1 rounded border"
-              >
-                <option value="reported">Reported</option>
-                <option value="acknowledged">Acknowledged</option>
-                <option value="in-progress">In Progress</option>
-                <option value="resolved">Resolved</option>
-              </select>
+              <>
+                {status !== "resolved" && (
+                  <Button variant="outline" size="sm" onClick={() => onMarkDone?.(id)} className="gap-2">
+                    <CheckCircle className="h-4 w-4" />
+                    Mark Done
+                  </Button>
+                )}
+                <Button variant="destructive" size="sm" onClick={() => onDelete?.(id)} className="gap-2">
+                  <Trash2 className="h-4 w-4" />
+                  Remove
+                </Button>
+              </>
             )}
           </div>
         </div>
