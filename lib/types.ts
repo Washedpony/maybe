@@ -18,17 +18,16 @@ export interface Job {
   id: string
   title: string
   description: string
-  employer: string
   employerId: string
+  employerName: string
   parish: string
-  salaryMin: number
-  salaryMax: number
-  currency: string
-  jobType: "full-time" | "part-time" | "contract"
-  requiredSkills: string[]
-  deadline: Date
+  category: string
+  type: string
+  salary: string
+  requirements: string[]
   status: "active" | "closed" | "filled"
   applications: number
+  reports?: Report[] // Added reports array
   createdAt: Date
   updatedAt: Date
 }
@@ -119,4 +118,20 @@ export interface Issue {
   updatedAt: Date
   upvotes: number
   images?: string[]
+}
+
+// Report Types
+export interface Report {
+  id: string
+  jobId: string
+  jobTitle: string
+  reporterId: string
+  reporterName: string
+  reporterEmail: string
+  description: string
+  category: "issue" | "update" | "completion" | "question"
+  priority: "low" | "medium" | "high"
+  status: "open" | "in-progress" | "resolved" | "closed"
+  createdAt: Date
+  updatedAt: Date
 }

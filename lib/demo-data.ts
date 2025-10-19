@@ -7,6 +7,7 @@ const DEMO_JOBS_KEY = "joust_demo_jobs"
 const DEMO_GIGS_KEY = "joust_demo_gigs"
 const DEMO_ISSUES_KEY = "joust_demo_issues"
 const DEMO_APPLICATIONS_KEY = "joust_demo_applications"
+const DEMO_REPORTS_KEY = "joust_demo_reports"
 
 const isBrowser = typeof window !== "undefined"
 
@@ -302,6 +303,9 @@ export const initDemoData = () => {
   if (!localStorage.getItem(DEMO_APPLICATIONS_KEY)) {
     localStorage.setItem(DEMO_APPLICATIONS_KEY, JSON.stringify([]))
   }
+  if (!localStorage.getItem(DEMO_REPORTS_KEY)) {
+    localStorage.setItem(DEMO_REPORTS_KEY, JSON.stringify([]))
+  }
 }
 
 // Demo data service
@@ -360,6 +364,20 @@ export const demoDataService = {
     const jobs = JSON.parse(localStorage.getItem(DEMO_JOBS_KEY) || "[]") as Job[]
     const filtered = jobs.filter((j) => j.id !== id)
     localStorage.setItem(DEMO_JOBS_KEY, JSON.stringify(filtered))
+  },
+
+  // Job search functionality
+  async searchJobs(query: string) {
+    if (!isBrowser) return []
+    const jobs = JSON.parse(localStorage.getItem(DEMO_JOBS_KEY) || "[]") as Job[]
+    const lowerQuery = query.toLowerCase()
+    return jobs.filter(
+      (j) =>
+        j.title.toLowerCase().includes(lowerQuery) ||
+        j.id.toLowerCase().includes(lowerQuery) ||
+        j.description.toLowerCase().includes(lowerQuery) ||
+        j.category.toLowerCase().includes(lowerQuery),
+    )
   },
 
   // Gigs
@@ -510,6 +528,70 @@ export const demoDataService = {
     if (!isBrowser) return []
     const apps = JSON.parse(localStorage.getItem(DEMO_APPLICATIONS_KEY) || "[]") as JobApplication[]
     return apps.filter((a) => a.userId === userId)
+  },
+
+  // Report management
+  async getReports(jobId?: string) {
+    if (!isBrowser) return []
+    const reports = JSON.parse(localStorage.getItem(DEMO_REPORTS_KEY) || "[]")
+    return jobId ? reports.filter((r: any) => r.jobId === jobId) : reports
+  },
+
+  async createReport(reportData: any) {
+    if (!isBrowser) throw new Error("Cannot access localStorage during SSR")
+
+    let jobId = reportData.jobId
+
+    if (!jobId && reportData.jobTitle) {
+      // Create new job automatically
+      jobId = await this.createJob({
+        title: reportData.jobTitle,
+        description: reportData.description || `Auto-created from report`,
+        employerId: "system",
+        employerName: "System Generated",
+        parish: reportData.parish || "Kingston",
+        category: reportData.category || "General",
+        type: "task",
+        salary: "N/A",
+        requirements: [],
+        status: "active",
+      })
+    }
+
+    const reports = JSON.parse(localStorage.getItem(DEMO_REPORTS_KEY) || "[]")
+    const newReport = {
+      id: `report-${Date.now()}`,
+      ...reportData,
+      jobId,
+      status: reportData.status || "open",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    }
+    reports.push(newReport)
+    localStorage.setItem(DEMO_REPORTS_KEY, JSON.stringify(reports))
+
+    if (isBrowser) {
+      window.dispatchEvent(new CustomEvent("jobCreated", { detail: { jobId } }))
+    }
+
+    return newReport.id
+  },
+
+  async updateReport(id: string, updates: any) {
+    if (!isBrowser) throw new Error("Cannot access localStorage during SSR")
+    const reports = JSON.parse(localStorage.getItem(DEMO_REPORTS_KEY) || "[]")
+    const index = reports.findIndex((r: any) => r.id === id)
+    if (index !== -1) {
+      reports[index] = { ...reports[index], ...updates, updatedAt: new Date() }
+      localStorage.setItem(DEMO_REPORTS_KEY, JSON.stringify(reports))
+    }
+  },
+
+  async deleteReport(id: string) {
+    if (!isBrowser) throw new Error("Cannot access localStorage during SSR")
+    const reports = JSON.parse(localStorage.getItem(DEMO_REPORTS_KEY) || "[]")
+    const filtered = reports.filter((r: any) => r.id !== id)
+    localStorage.setItem(DEMO_REPORTS_KEY, JSON.stringify(filtered))
   },
 }
 

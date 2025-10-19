@@ -36,6 +36,7 @@ export function IssueReportForm({ onSubmit, onClose }: IssueReportFormProps) {
         body: JSON.stringify(formData),
       })
       if (response.ok) {
+        window.dispatchEvent(new CustomEvent("issueCreated"))
         onSubmit?.(formData)
         setFormData({ title: "", description: "", category: "pothole", location: "", parish: "" })
       }
