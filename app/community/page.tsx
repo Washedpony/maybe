@@ -87,19 +87,30 @@ export default function CommunityPage() {
   const { user } = useAuth()
   const userRole = user?.role || "citizen"
 
-  useEffect(() => {
-    const loadIssues = async () => {
-      try {
-        const response = await fetch("/api/issues")
-        if (response.ok) {
-          const data = await response.json()
-          setIssues(data)
-        }
-      } catch (error) {
-        console.error("Error loading issues:", error)
+  const loadIssues = async () => {
+    try {
+      const response = await fetch("/api/issues")
+      if (response.ok) {
+        const data = await response.json()
+        setIssues(data)
       }
+    } catch (error) {
+      console.error("Error loading issues:", error)
     }
+  }
+
+  useEffect(() => {
     loadIssues()
+  }, [])
+
+  useEffect(() => {
+    const handleIssueCreated = () => {
+      // Reload issues when a new one is created
+      loadIssues()
+    }
+
+    window.addEventListener("issueCreated", handleIssueCreated)
+    return () => window.removeEventListener("issueCreated", handleIssueCreated)
   }, [])
 
   const filteredPostings = postings.filter((posting) => {
@@ -235,6 +246,11 @@ export default function CommunityPage() {
     }
   }
 
+  const handleIssueSubmit = () => {
+    setShowIssueForm(false)
+    // Issues will be reloaded via the custom event
+  }
+
   return (
     <div className="flex h-screen bg-background">
       <Sidebar />
@@ -279,7 +295,7 @@ export default function CommunityPage() {
               </div>
 
               {showIssueForm && (
-                <IssueReportForm onClose={() => setShowIssueForm(false)} onSubmit={() => setShowIssueForm(false)} />
+                <IssueReportForm onClose={() => setShowIssueForm(false)} onSubmit={handleIssueSubmit} />
               )}
 
               {issues.length > 0 && (
